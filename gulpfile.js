@@ -14,19 +14,17 @@ const paths = {
 
 function walkTranslations(inputNode) {
   let paths = walkSync(inputNode, ['**/*.yaml']);
-  let translations = {};
 
-  paths.forEach((translationPath) => {
-    let locale = path.basename(translationPath, '.yaml');
+	return paths.reduce((translations, translationPath) => {
+		let code = path.basename(translationPath, '.yaml');
 
-    if (!translations[locale]) {
-      translations[locale] = [];
+    if (!translations[code]) {
+      translations[code] = [];
     }
 
-    translations[locale].push(path.join(inputNode, translationPath));
-  });
-
-  return translations;
+    translations[code].push(path.join(inputNode, translationPath));
+		return translations;
+	}, {});
 }
 
 gulp.task('clean', () => {
@@ -35,21 +33,16 @@ gulp.task('clean', () => {
 
 gulp.task('translations:concat', ['clean'], () => {
   let translations = walkTranslations(path.join(paths.translations));
-  let tasks = [];
 
-  Object.keys(translations).forEach(key => {
-    let translation = translations[key];
-
-    let task = gulp
-      .src(translation)
-      .pipe(concat(`${key}.yaml`, { newLine: '' }))
+  let tasks = Object.keys(translations).map(code => {
+    return gulp
+      .src(translations[code])
+      .pipe(concat(`${key}.yaml`))
       .pipe(yaml({
         space: 2,
         safe: true
       }))
       .pipe(gulp.dest('build'))
-
-    tasks.push(task);
   });
 
   return merge.apply(this, tasks);
