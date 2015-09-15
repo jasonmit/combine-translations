@@ -10,21 +10,20 @@ const walkSync = require('walk-sync');
 function walkTranslations(inputNode) {
   let paths = walkSync(inputNode, ['**/*.yaml']);
 
-	return paths.reduce((translations, translationPath) => {
-		let code = path.basename(translationPath, '.yaml');
+  return paths.reduce((translations, translationPath) => {
+    let code = path.basename(translationPath, '.yaml');
 
     if (!translations[code]) {
       translations[code] = [];
     }
 
     translations[code].push(path.join(inputNode, translationPath));
-		return translations;
-	}, {});
+    return translations;
+  }, {});
 }
 
-
 module.exports = function(inputNode) {
-	let translations = walkTranslations(path.join(inputNode));
+  let translations = walkTranslations(path.join(inputNode));
 
   let tasks = Object.keys(translations).map(code => {
     return gulp
